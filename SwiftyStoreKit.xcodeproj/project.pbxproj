@@ -116,6 +116,10 @@
 		65F7DF8F1DCD524300835D30 /* SwiftyStoreKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6502F62D1B985C40004E342D /* SwiftyStoreKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C4FD3A101C2954CD0035CFF3 /* SwiftyStoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4D74BBB1C24CEC90071AD3E /* SwiftyStoreKit.framework */; };
 		C4FD3A111C2954CD0035CFF3 /* SwiftyStoreKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C4D74BBB1C24CEC90071AD3E /* SwiftyStoreKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F67814F82CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */; };
+		F67814F92CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */; };
+		F67814FA2CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */; };
+		F67814FB2CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -251,6 +255,7 @@
 		A61BF4DD2481F4970017D9BC /* SwiftyStoreKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftyStoreKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4D74BBB1C24CEC90071AD3E /* SwiftyStoreKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftyStoreKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4FD3A011C2954C10035CFF3 /* SwiftyStoreKit_macOSDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftyStoreKit_macOSDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SwiftyStoreKit+Async.swift"; path = "Sources/SwiftyStoreKit/SwiftyStoreKit+Async.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -361,10 +366,12 @@
 				2F2B8B2A24A64CC100CEF088 /* SKProduct+LocalizedPrice.swift */,
 				2F2B8B2124A64CC000CEF088 /* SKProductDiscount+LocalizedPrice.swift */,
 				2F2B8B2E24A64CC100CEF088 /* SwiftyStoreKit.swift */,
+				F67814F72CE4863200E4302E /* SwiftyStoreKit+Async.swift */,
 				2F2B8B2524A64CC000CEF088 /* SwiftyStoreKit+Types.swift */,
 				65F7DF931DCD536100835D30 /* Platforms */,
 			);
-			path = SwiftyStoreKit;
+			name = SwiftyStoreKit;
+			path = Sources/SwiftyStoreKit;
 			sourceTree = "<group>";
 		};
 		654287EF1E79F5A000F61800 /* SwiftyStoreKit-tvOS-Demo */ = {
@@ -393,7 +400,8 @@
 				2F2B8B9724A64DE600CEF088 /* TestPaymentTransaction.swift */,
 				2F2B8B9824A64DE600CEF088 /* TestProduct.swift */,
 			);
-			path = SwiftyStoreKitTests;
+			name = SwiftyStoreKitTests;
+			path = Tests/SwiftyStoreKitTests;
 			sourceTree = "<group>";
 		};
 		65F7DF671DCD4DF000835D30 /* SwiftyStoreKit-iOS-Demo */ = {
@@ -835,6 +843,7 @@
 				2F2B8B4624A64CC100CEF088 /* CompleteTransactionsController.swift in Sources */,
 				2F2B8B5E24A64CC100CEF088 /* OS.swift in Sources */,
 				2F2B8B5224A64CC100CEF088 /* InAppReceiptVerificator.swift in Sources */,
+				F67814FA2CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */,
 				2F2B8B6624A64CC100CEF088 /* SwiftyStoreKit.swift in Sources */,
 				2F2B8B4A24A64CC100CEF088 /* PaymentQueueController.swift in Sources */,
 				2F2B8B4224A64CC100CEF088 /* SwiftyStoreKit+Types.swift in Sources */,
@@ -867,6 +876,7 @@
 				2F2B8B4424A64CC100CEF088 /* CompleteTransactionsController.swift in Sources */,
 				2F2B8B5C24A64CC100CEF088 /* OS.swift in Sources */,
 				2F2B8B5024A64CC100CEF088 /* InAppReceiptVerificator.swift in Sources */,
+				F67814F82CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */,
 				2F2B8B6424A64CC100CEF088 /* SwiftyStoreKit.swift in Sources */,
 				2F2B8B4824A64CC100CEF088 /* PaymentQueueController.swift in Sources */,
 				2F2B8B4024A64CC100CEF088 /* SwiftyStoreKit+Types.swift in Sources */,
@@ -917,6 +927,7 @@
 				2F2B8B4724A64CC100CEF088 /* CompleteTransactionsController.swift in Sources */,
 				2F2B8B5F24A64CC100CEF088 /* OS.swift in Sources */,
 				2F2B8B5324A64CC100CEF088 /* InAppReceiptVerificator.swift in Sources */,
+				F67814FB2CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */,
 				2F2B8B6724A64CC100CEF088 /* SwiftyStoreKit.swift in Sources */,
 				2F2B8B4B24A64CC100CEF088 /* PaymentQueueController.swift in Sources */,
 				2F2B8B4324A64CC100CEF088 /* SwiftyStoreKit+Types.swift in Sources */,
@@ -939,6 +950,7 @@
 				2F2B8B4524A64CC100CEF088 /* CompleteTransactionsController.swift in Sources */,
 				2F2B8B5D24A64CC100CEF088 /* OS.swift in Sources */,
 				2F2B8B5124A64CC100CEF088 /* InAppReceiptVerificator.swift in Sources */,
+				F67814F92CE4863200E4302E /* SwiftyStoreKit+Async.swift in Sources */,
 				2F2B8B6524A64CC100CEF088 /* SwiftyStoreKit.swift in Sources */,
 				2F2B8B4924A64CC100CEF088 /* PaymentQueueController.swift in Sources */,
 				2F2B8B4124A64CC100CEF088 /* SwiftyStoreKit+Types.swift in Sources */,
@@ -1194,7 +1206,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/SwiftyStoreKit-iOS-Demo/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.musevisions.iOS.SwiftyStoreDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1210,7 +1222,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = "$(SRCROOT)/SwiftyStoreKit-iOS-Demo/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.musevisions.iOS.SwiftyStoreDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
