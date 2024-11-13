@@ -149,7 +149,6 @@ public enum PurchaseResult {
     case success(purchase: PurchaseDetails)
     case pending(purchase: PurchaseDetails)
     case userCancelled
-    case failure(SKError)
 }
 
 /// Restore purchase results

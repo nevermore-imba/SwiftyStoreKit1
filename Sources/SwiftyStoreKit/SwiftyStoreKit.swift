@@ -46,7 +46,7 @@ public class SwiftyStoreKit {
         return productsInfoController.retrieveProductsInfo(productIds, completion: completion)
     }
 
-    fileprivate func purchaseProduct(_ product: SKProduct, quantity: Int = 1, atomically: Bool = true, appAccountToken: UUID? = nil, simulatesAskToBuyInSandbox: Bool = false, paymentDiscount: PaymentDiscount? = nil, completion: @escaping (PurchaseResult) -> Void) {
+    fileprivate func purchaseProduct(_ product: SKProduct, quantity: Int = 1, atomically: Bool = true, appAccountToken: UUID? = nil, simulatesAskToBuyInSandbox: Bool = false, paymentDiscount: PaymentDiscount? = nil, completion: @escaping (Swift.Result<PurchaseResult, SKError>) -> Void) {
         let payment = Payment(product: product, paymentDiscount: paymentDiscount, quantity: quantity, atomically: atomically, appAccountToken: appAccountToken, simulatesAskToBuyInSandbox: simulatesAskToBuyInSandbox) { result in
             completion(self.processPurchaseResult(result))
         }
@@ -78,15 +78,15 @@ public class SwiftyStoreKit {
         paymentQueueController.finishTransaction(transaction)
     }
 
-    private func processPurchaseResult(_ result: TransactionResult) -> PurchaseResult {
+    private func processPurchaseResult(_ result: TransactionResult) -> Swift.Result<PurchaseResult, SKError> {
         switch result {
         case .purchased(let purchase):
-            return .success(purchase: purchase)
+            return .success(.success(purchase: purchase))
         case .pending(let purchase):
-            return .pending(purchase: purchase)
+            return .success(.pending(purchase: purchase))
         case .failed(let error):
             if error.code == .paymentCancelled {
-                return .userCancelled
+                return .success(.userCancelled)
             } else {
                 return .failure(error)
             }
@@ -153,7 +153,7 @@ extension SwiftyStoreKit {
     ///  - Parameter appAccountToken: an opaque identifier for the user’s account on your system
     ///  - Parameter paymentDiscount: optional discount to be applied. Must be of `SKProductPayment` type
     ///  - Parameter completion: handler for result
-    public class func purchaseProduct(_ product: SKProduct, quantity: Int = 1, atomically: Bool = true, appAccountToken: UUID? = nil, simulatesAskToBuyInSandbox: Bool = false, paymentDiscount: PaymentDiscount? = nil, completion: @escaping (PurchaseResult) -> Void) {
+    public class func purchaseProduct(_ product: SKProduct, quantity: Int = 1, atomically: Bool = true, appAccountToken: UUID? = nil, simulatesAskToBuyInSandbox: Bool = false, paymentDiscount: PaymentDiscount? = nil, completion: @escaping (Swift.Result<PurchaseResult, SKError>) -> Void) {
         sharedInstance.purchaseProduct(
             product,
             quantity: quantity,
