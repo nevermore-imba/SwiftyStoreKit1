@@ -40,24 +40,37 @@ public protocol Purchased {
     var productId: String { get }
     var quantity: Int { get }
     var originalPurchaseDate: Date { get }
+    var appAccountToken: UUID? { get }
 }
 
 extension Purchase: Purchased {
+
     public var originalPurchaseDate: Date {
         guard let date = originalTransaction?.transactionDate ?? transaction.transactionDate else {
             fatalError("there should always be a transaction date, so this should not happen...")
         }
         return  date
     }
+
+    public var appAccountToken: UUID? {
+        return transaction.appAccountToken ?? originalTransaction?.appAccountToken
+    }
+
 }
 
 extension PurchaseDetails: Purchased {
+
     public var originalPurchaseDate: Date {
         guard let date = originalTransaction?.transactionDate ?? transaction.transactionDate else {
             fatalError("there should always be a transaction date, so this should not happen...")
         }
         return  date
     }
+
+    public var appAccountToken: UUID? {
+        return transaction.appAccountToken ?? originalTransaction?.appAccountToken
+    }
+
 }
 
 // Restored product
@@ -98,7 +111,7 @@ public struct PurchaseDetails {
 
 /// Conform to this protocol to provide custom receipt validator
 public protocol ReceiptValidator {
-	func validate(receiptData: Data, completion: @escaping (VerifyReceiptResult) -> Void)
+	func validate(receiptData: Data, completion: @escaping (VerificationReceiptResult) -> Void)
 }
 
 /// Payment transaction
@@ -106,14 +119,20 @@ public protocol PaymentTransaction {
     var transactionDate: Date? { get }
     var transactionState: SKPaymentTransactionState { get }
     var transactionIdentifier: String? { get }
+    var appAccountToken: UUID? { get }
     var downloads: [SKDownload] { get }
 }
 
 /// Add PaymentTransaction conformance to SKPaymentTransaction
-extension SKPaymentTransaction: PaymentTransaction { }
+extension SKPaymentTransaction: PaymentTransaction {
+    public var appAccountToken: UUID? {
+        return payment.applicationUsername.flatMap(UUID.init(uuidString:))
+    }
+}
 
 /// Products information
 public struct RetrieveResults {
+    
     public let retrievedProducts: Set<SKProduct>
     public let invalidProductIDs: Set<String>
     public let error: Error?
@@ -128,12 +147,14 @@ public struct RetrieveResults {
 /// Purchase result
 public enum PurchaseResult {
     case success(purchase: PurchaseDetails)
-    case deferred(purchase: PurchaseDetails)
-    case error(error: SKError)
+    case pending(purchase: PurchaseDetails)
+    case userCancelled
+    case failure(SKError)
 }
 
 /// Restore purchase results
 public struct RestoreResults {
+
     public let restoredPurchases: [Purchase]
     public let restoreFailedPurchases: [(SKError, String?)]
     
@@ -149,18 +170,64 @@ public typealias UpdatedDownloadsHandler = (_ downloads: [SKDownload]) -> Void
 // MARK: Receipt verification
 
 /// Info for receipt returned by server
-public typealias ReceiptInfo = [String: AnyObject]
+public typealias ReceiptInfo = [String: Any]
 
 /// Fetch receipt result
 public enum FetchReceiptResult {
-    case success(receiptData: Data)
-    case error(error: ReceiptError)
+    case success(receiptData: Data?)
+    case failure(Error)
 }
 
 /// Verify receipt result
-public enum VerifyReceiptResult {
-    case success(receipt: ReceiptInfo)
-    case error(error: ReceiptError)
+public enum VerificationReceiptResult {
+    
+    case verified(receiptInfo: ReceiptInfo)
+
+    case unverified(receiptInfo: ReceiptInfo, verificationError: VerificationReceiptResult.VerificationError)
+
+    public var receiptInfo: ReceiptInfo {
+        get throws {
+            switch self {
+            case .verified(let receiptInfo):
+                return receiptInfo
+            case let .unverified(_, verificationError):
+                throw verificationError
+            }
+        }
+    }
+
+    public var unsafeReceiptInfo: ReceiptInfo {
+        switch self {
+        case .verified(let receiptInfo):
+            return receiptInfo
+        case let .unverified(receiptInfo, _):
+            return receiptInfo
+        }
+    }
+
+}
+
+extension VerificationReceiptResult {
+
+    public enum VerificationError: Error {
+
+        case notFoundReceiptData
+
+        /// No data received
+        case missingRemoteData
+
+        /// Error when encoding HTTP body into JSON
+        case requestBodyEncodeFailed(any Error)
+
+        /// Error when proceeding request
+        case networkError(any Error)
+
+        /// Error when decoding response
+        case jsonDecodeFailed(Data)
+
+        /// Receive invalid - bad status returned
+        case invalidStatus(ReceiptStatus)
+    }
 }
 
 /// Result for Consumable and NonConsumable
@@ -222,8 +289,10 @@ public struct ReceiptItem: Purchased, Codable {
     
     /// An indicator that a subscription has been canceled due to an upgrade. This field is only present for upgrade transactions.
     public var isUpgraded: Bool
-    
-    public init(productId: String, quantity: Int, transactionId: String, originalTransactionId: String, purchaseDate: Date, originalPurchaseDate: Date, webOrderLineItemId: String?, subscriptionExpirationDate: Date?, cancellationDate: Date?, isTrialPeriod: Bool, isInIntroOfferPeriod: Bool, isUpgraded: Bool) {
+
+    public var appAccountToken: UUID?
+
+    public init(productId: String, quantity: Int, transactionId: String, originalTransactionId: String, purchaseDate: Date, originalPurchaseDate: Date, webOrderLineItemId: String?, subscriptionExpirationDate: Date?, cancellationDate: Date?, isTrialPeriod: Bool, isInIntroOfferPeriod: Bool, isUpgraded: Bool, appAccountToken: UUID?) {
         self.productId = productId
         self.quantity = quantity
         self.transactionId = transactionId
@@ -236,29 +305,16 @@ public struct ReceiptItem: Purchased, Codable {
         self.isTrialPeriod = isTrialPeriod
         self.isInIntroOfferPeriod = isInIntroOfferPeriod
         self.isUpgraded = isUpgraded
+        self.appAccountToken = appAccountToken
     }
-}
 
-/// Error when managing receipt
-public enum ReceiptError: Swift.Error {
-    /// No receipt data
-    case noReceiptData
-    /// No data received
-    case noRemoteData
-    /// Error when encoding HTTP body into JSON
-    case requestBodyEncodeError(error: Swift.Error)
-    /// Error when proceeding request
-    case networkError(error: Swift.Error)
-    /// Error when decoding response
-    case jsonDecodeError(string: String?)
-    /// Receive invalid - bad status returned
-    case receiptInvalid(receipt: ReceiptInfo, status: ReceiptStatus)
 }
 
 /// Status code returned by remote server
 /// 
 /// See Table 2-1  Status codes
 public enum ReceiptStatus: Int {
+
     /// Not decodable status
     case unknown = -2
     /// No status returned
@@ -287,6 +343,7 @@ public enum ReceiptStatus: Int {
 
 // Receipt field as defined in : https://developer.apple.com/library/ios/releasenotes/General/ValidateAppStoreReceipt/Chapters/ReceiptFields.html#//apple_ref/doc/uid/TP40010573-CH106-SW1
 public enum ReceiptInfoField: String {
+
     /// Bundle Identifier. This corresponds to the value of CFBundleIdentifier in the Info.plist file.
     case bundle_id
     /// The app’s version number.This corresponds to the value of CFBundleVersion (in iOS) or CFBundleShortVersionString (in OS X) in the Info.plist.

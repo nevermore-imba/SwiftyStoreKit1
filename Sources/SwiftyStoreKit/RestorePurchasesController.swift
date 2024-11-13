@@ -26,13 +26,18 @@ import Foundation
 import StoreKit
 
 struct RestorePurchases {
+    
     let atomically: Bool
-    let applicationUsername: String?
+    let appAccountToken: UUID?
     let callback: ([TransactionResult]) -> Void
 
-    init(atomically: Bool, applicationUsername: String? = nil, callback: @escaping ([TransactionResult]) -> Void) {
+    init(
+        atomically: Bool,
+        appAccountToken: UUID? = nil,
+        callback: @escaping ([TransactionResult]) -> Void
+    ) {
         self.atomically = atomically
-        self.applicationUsername = applicationUsername
+        self.appAccountToken = appAccountToken
         self.callback = callback
     }
 }

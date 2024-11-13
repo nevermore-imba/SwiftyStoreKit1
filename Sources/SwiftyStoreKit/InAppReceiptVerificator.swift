@@ -26,22 +26,22 @@
 import Foundation
 
 class InAppReceiptVerificator: NSObject {
-
+    
     let appStoreReceiptURL: URL?
     init(appStoreReceiptURL: URL? = Bundle.main.appStoreReceiptURL) {
         self.appStoreReceiptURL = appStoreReceiptURL
     }
-
+    
     var appStoreReceiptData: Data? {
         guard let receiptDataURL = appStoreReceiptURL,
-            let data = try? Data(contentsOf: receiptDataURL) else {
+              let data = try? Data(contentsOf: receiptDataURL) else {
             return nil
         }
         return data
     }
-
+    
     private var receiptRefreshRequest: InAppReceiptRefreshRequest?
-
+    
     /**
      *  Verify application receipt.
      *  - Parameter validator: Validator to check the encrypted receipt and return the receipt in readable format
@@ -50,17 +50,22 @@ class InAppReceiptVerificator: NSObject {
      *  - Parameter completion: handler for result
      */
     @discardableResult
-    public func verifyReceipt(using validator: ReceiptValidator,
-                              forceRefresh: Bool,
-                              refresh: InAppReceiptRefreshRequest.ReceiptRefresh = InAppReceiptRefreshRequest.refresh,
-                              completion: @escaping (VerifyReceiptResult) -> Void) -> InAppRequest? {
-        
+    public func verifyReceipt(
+        using validator: ReceiptValidator,
+        forceRefresh: Bool,
+        refresh: InAppReceiptRefreshRequest.ReceiptRefresh = InAppReceiptRefreshRequest.refresh,
+        completion: @escaping (VerificationReceiptResult) -> Void
+    ) -> InAppRequest? {
         return fetchReceipt(forceRefresh: forceRefresh, refresh: refresh) { result in
             switch result {
             case .success(let receiptData):
-                self.verify(receiptData: receiptData, using: validator, completion: completion)
-            case .error(let error):
-                completion(.error(error: error))
+                if let receiptData, !receiptData.isEmpty {
+                    self.verify(receiptData: receiptData, using: validator, completion: completion)
+                } else {
+                    completion(.unverified(receiptInfo: [:], verificationError: .notFoundReceiptData))
+                }
+            case .failure(let error):
+                completion(.unverified(receiptInfo: [:], verificationError: .networkError(error)))
             }
         }
     }
@@ -74,10 +79,12 @@ class InAppReceiptVerificator: NSObject {
      *  - Parameter completion: handler for result
      */
     @discardableResult
-    public func fetchReceipt(forceRefresh: Bool,
-                             refresh: InAppReceiptRefreshRequest.ReceiptRefresh = InAppReceiptRefreshRequest.refresh,
-                             completion: @escaping (FetchReceiptResult) -> Void) -> InAppRequest? {
-
+    public func fetchReceipt(
+        forceRefresh: Bool,
+        refresh: InAppReceiptRefreshRequest.ReceiptRefresh = InAppReceiptRefreshRequest.refresh,
+        completion: @escaping (FetchReceiptResult) -> Void
+    ) -> InAppRequest? {
+        
         if let receiptData = appStoreReceiptData, forceRefresh == false {
             completion(.success(receiptData: receiptData))
             return nil
@@ -89,13 +96,10 @@ class InAppReceiptVerificator: NSObject {
                 
                 switch result {
                 case .success:
-                    if let receiptData = self.appStoreReceiptData {
-                        completion(.success(receiptData: receiptData))
-                    } else {
-                        completion(.error(error: .noReceiptData))
-                    }
-                case .error(let e):
-                    completion(.error(error: .networkError(error: e)))
+                    let receiptData = self.appStoreReceiptData
+                    completion(.success(receiptData: receiptData))
+                case .error(let error):
+                    completion(.failure(error))
                 }
             }
             return receiptRefreshRequest
@@ -107,8 +111,8 @@ class InAppReceiptVerificator: NSObject {
      *  - Parameter validator: Validator to check the encrypted receipt and return the receipt in readable format
      *  - Parameter completion: handler for result
      */
-    private func verify(receiptData: Data, using validator: ReceiptValidator, completion: @escaping (VerifyReceiptResult) -> Void) {
-     
+    private func verify(receiptData: Data, using validator: ReceiptValidator, completion: @escaping (VerificationReceiptResult) -> Void) {
+        
         validator.validate(receiptData: receiptData) { result in
             
             DispatchQueue.main.async {

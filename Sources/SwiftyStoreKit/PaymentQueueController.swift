@@ -38,7 +38,7 @@ protocol TransactionController {
 public enum TransactionResult {
     case purchased(purchase: PurchaseDetails)
     case restored(purchase: Purchase)
-    case deferred(purchase: PurchaseDetails)
+    case pending(purchase: PurchaseDetails)
     case failed(error: SKError)
 }
 
@@ -54,8 +54,8 @@ public protocol PaymentQueue: AnyObject {
     func resume(_ downloads: [SKDownload])
     func cancel(_ downloads: [SKDownload])
     
-    func restoreCompletedTransactions(withApplicationUsername username: String?)
-    
+    func restoreCompletedTransactions(withAppAccountToken appAccountToken: UUID?)
+
     func finishTransaction(_ transaction: SKPaymentTransaction)
 }
 
@@ -66,7 +66,15 @@ extension SKPaymentQueue: PaymentQueue {
         resumeDownloads(downloads)
     }
     #endif
-    
+
+    public func restoreCompletedTransactions(withAppAccountToken appAccountToken: UUID?) {
+        if let appAccountToken {
+            restoreCompletedTransactions(withApplicationUsername: appAccountToken.uuidString)
+        } else {
+            restoreCompletedTransactions()
+        }
+    }
+
 }
 
 extension SKPaymentTransaction {
@@ -78,7 +86,7 @@ extension SKPaymentTransaction {
     
 }
 
-extension SKPaymentTransactionState: CustomDebugStringConvertible {
+extension SKPaymentTransactionState: @retroactive CustomDebugStringConvertible {
     
     public var debugDescription: String {
         switch self {
@@ -135,7 +143,7 @@ class PaymentQueueController: NSObject, SKPaymentTransactionObserver {
         assertCompleteTransactionsWasCalled()
         
         let skPayment = SKMutablePayment(product: payment.product)
-        skPayment.applicationUsername = payment.applicationUsername
+        skPayment.applicationUsername = payment.appAccountToken?.uuidString
         skPayment.quantity = payment.quantity
         
         if #available(iOS 12.2, tvOS 12.2, OSX 10.14.4, watchOS 6.2, *) {
@@ -171,7 +179,7 @@ class PaymentQueueController: NSObject, SKPaymentTransactionObserver {
             return
         }
         
-        paymentQueue.restoreCompletedTransactions(withApplicationUsername: restorePurchases.applicationUsername)
+        paymentQueue.restoreCompletedTransactions(withAppAccountToken: restorePurchases.appAccountToken)
         
         restorePurchasesController.restorePurchases = restorePurchases
     }
